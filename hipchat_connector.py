@@ -99,6 +99,9 @@ class HipchatConnector(BaseConnector):
 
         message = message.replace('{', '{{').replace('}', '}}')
 
+        if 200 <= status_code < 399:
+            return RetVal(action_result.set_status(phantom.APP_SUCCESS, message), None)
+
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
     def _process_json_response(self, r, action_result):
@@ -202,7 +205,7 @@ class HipchatConnector(BaseConnector):
         url = self._server_url + endpoint
 
         try:
-            r = request_func(url, data=data, headers=headers, verify=self._verify_server_cert, params=params,
+            r = request_func(url, data=json.dumps(data), headers=headers, verify=self._verify_server_cert, params=params,
                              timeout=timeout)
         except Exception as e:
             return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".
@@ -218,10 +221,10 @@ class HipchatConnector(BaseConnector):
         """
 
         action_result = self.add_action_result(ActionResult(dict(param)))
-        self.save_progress(HIPCHAT_TA_CONNECTION_TEST_MSG)
+        self.save_progress(HIPCHAT_CONNECTION_TEST_MSG)
 
         # make rest call
-        ret_val, response = self._make_rest_call(endpoint=HIPCHAT_TA_REST_TEST_CONNECTIVITY,
+        ret_val, response = self._make_rest_call(endpoint=HIPCHAT_REST_TEST_CONNECTIVITY,
                                                  action_result=action_result, timeout=30)
 
         if phantom.is_fail(ret_val):
@@ -371,52 +374,81 @@ class HipchatConnector(BaseConnector):
         # For now return Error with a message, in case of success we don't set the message, but use the summary
         return action_result.set_status(phantom.APP_ERROR, "Action not yet implemented")
 
+    def _get_user(self, user_name, action_result):
+        """ This function is used to get the user_id from the username.
+
+        :param user_name: Username
+        :param action_result: Object of class ActionResult
+        :return: status, user_id
+        """
+
+        count = 0
+        param = {}
+        user = None
+
+        # List User API returns paginated response
+        while True:
+            param['start-index'] = count
+            status, response = self._make_rest_call(HIPCHAT_REST_TEST_CONNECTIVITY, action_result, params=param)
+
+            if phantom.is_fail(status):
+                return action_result.get_status(), None
+
+            # Iterate through each response item and get id if username matches
+            for item in response['items']:
+                if item['mention_name'] == user_name:
+                    user = item['id']
+                    break
+
+            # If response is empty or user is already found
+            if not response['items'] or user:
+                break
+
+            count += 100
+
+        return action_result.set_status(phantom.APP_SUCCESS), user
+
     def _handle_send_message(self, param):
+        """ This function is used to send the message to specific user.
 
-        # Implement the handler here
-        # use self.save_progress(...) to send progress messages back to the platform
+        :param param: Dictionary of input parameters
+        :return: status phantom.APP_SUCCESS/phantom.APP_ERROR
+        """
+
         self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
-
-        # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        """
-        # Access action parameters passed in the 'param' dictionary
+        message = param['message']
+        username = param.get('username')
+        email = param.get('email')
 
-        # Required values can be accessed directly
-        required_parameter = param['required_parameter']
+        # If username and email both are not provided
+        if not (username or email):
+            self.debug_print(HIPCHAT_MISSING_PARAMETER)
+            return action_result.set_status(phantom.APP_ERROR, HIPCHAT_MISSING_PARAMETER)
 
-        # Optional values should use the .get() function
-        optional_parameter = param.get('optional_parameter', 'default_value')
-        """
+        # If email is provided, directly pass it into API,
+        # otherwise get user_id from method _get_user()
+        if email:
+            user = email
+        else:
+            ret_value, user = self._get_user(username, action_result)
 
-        """
-        # make rest call
-        ret_val, response = self._make_rest_call('/endpoint', action_result, params=None, headers=None)
+            if phantom.is_fail(ret_value):
+                return action_result.get_status()
 
-        if (phantom.is_fail(ret_val)):
-            # the call to the 3rd party device or service failed, action result should contain all the error details
-            # so just return from here
+            if not user:
+                return action_result.set_status(phantom.APP_ERROR, status_message='Username not available')
+
+        data = {'message': message}
+
+        ret_val, response = self._make_rest_call(HIPCHAT_REST_SEND_MESSAGE.format(user=user), action_result,
+                                                 method='post', data=data)
+
+        if phantom.is_fail(ret_val):
             return action_result.get_status()
 
-        # Now post process the data,  uncomment code as you deem fit
-
-        # Add the response into the data section
-        # action_result.add_data(response)
-        """
-
-        action_result.add_data({})
-
-        # Add a dictionary that is made up of the most important values from data into the summary
-        summary = action_result.update_summary({})
-        summary['important_data'] = "value"
-
-        # Return success, no need to set the message, only the status
-        # BaseConnector will create a textual message based off of the summary dictionary
-        # return action_result.set_status(phantom.APP_SUCCESS)
-
-        # For now return Error with a message, in case of success we don't set the message, but use the summary
-        return action_result.set_status(phantom.APP_ERROR, "Action not yet implemented")
+        return action_result.set_status(phantom.APP_SUCCESS, status_message='Message sent')
 
     def handle_action(self, param):
         """ This function gets current action identifier and calls member function of its own to handle the action.

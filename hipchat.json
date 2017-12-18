@@ -149,29 +149,103 @@
     {
       "action": "send message",
       "identifier": "send_message",
-      "description": "Send message to user",
-      "verbose": "",
+      "description": "Send message to HipChat user",
+      "verbose": "Parameter username is a unique mention name of an user. One of the parameter username or email must be specified. If both provided, parameter email will get priority.",
       "type": "generic",
       "read_only": true,
-      "parameters": {},
+      "parameters": {
+        "username": {
+          "description": "Username",
+          "data_type": "string",
+          "primary": true,
+          "contains": [
+            "user name"
+          ],
+          "order": 0
+        },
+        "email": {
+          "description": "email",
+          "data_type": "string",
+          "primary": true,
+          "contains": [
+            "email"
+          ],
+          "order": 1
+        },
+        "message": {
+          "description": "Message to send",
+          "data_type": "string",
+          "primary": true,
+          "required": true,
+          "order": 2
+        }
+      },
       "output": [
         {
           "data_path": "action_result.status",
           "data_type": "string",
-          "column_name": "status",
-          "column_order": 0
+          "example_values": [
+            "success",
+            "failed"
+          ],
+          "column_name": "Status",
+          "column_order": 3
         },
         {
           "data_path": "action_result.message",
-          "data_type": "string"
+          "data_type": "string",
+          "example_values": [
+            "Message sent"
+          ],
+          "column_name": "Status Message",
+          "column_order": 4
         },
         {
           "data_path": "summary.total_objects",
-          "data_type": "numeric"
+          "data_type": "numeric",
+          "example_values": [
+            1
+          ]
+        },
+        {
+          "data_path": "action_result.parameter.username",
+          "data_type": "string",
+          "example_values": [
+            "test user"
+          ],
+          "contains": [
+            "user name"
+          ],
+          "column_name": "Username",
+          "column_order": 0
+        },
+        {
+          "data_path": "action_result.parameter.email",
+          "data_type": "string",
+          "example_values": [
+            "test_email@test.com"
+          ],
+          "contains": [
+            "email"
+          ],
+          "column_name": "Email",
+          "column_order": 1
+        },
+        {
+          "data_path": "action_result.parameter.message",
+          "data_type": "string",
+          "example_values": [
+            "Test message"
+          ],
+          "column_name": "Message",
+          "column_order": 2
         },
         {
           "data_path": "summary.total_objects_successful",
-          "data_type": "numeric"
+          "data_type": "numeric",
+          "example_values": [
+            1
+          ]
         }
       ],
       "render": {
