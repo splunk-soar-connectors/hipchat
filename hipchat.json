@@ -1,0 +1,183 @@
+{
+  "appid": "d9a35a47-972b-45a3-992c-3fc164b7ac73",
+  "name": "HipChat",
+  "description": "This app supports different actions on HipChat",
+  "type": "generic",
+  "product_vendor": "Atlassian",
+  "logo": "hipchat.png",
+  "product_name": "HipChat",
+  "product_version_regex": ".*",
+  "publisher": "Phantom",
+  "license": "Copyright (c) Phantom Cyber Corporation, 2017",
+  "app_version": "1.0.0",
+  "utctime_updated": "2017-12-18T05:50:18.370232Z",
+  "package_name": "phantom_hipchat",
+  "main_module": "hipchat_connector.pyc",
+  "min_phantom_version": "3.0.264",
+  "app_wizard_version": "1.0.0",
+  "configuration": {
+    "server_url": {
+      "description": "Server URL (e.g. https://10.10.10.10)",
+      "data_type": "string",
+      "required": true,
+      "order": 0
+    },
+    "verify_server_cert": {
+      "description": "Verify Server Certificate",
+      "data_type": "boolean",
+      "required": false,
+      "default": false,
+      "order": 1
+    },
+    "api_token": {
+      "description": "API token",
+      "data_type": "password",
+      "required": true,
+      "order": 2
+    }
+  },
+  "actions": [
+    {
+      "action": "test connectivity",
+      "identifier": "test_connectivity",
+      "description": "Validate the asset configuration for connectivity using supplied configuration",
+      "type": "test",
+      "read_only": true,
+      "parameters": {},
+      "output": [],
+      "versions": "EQ(*)"
+    },
+    {
+      "action": "get response",
+      "identifier": "get_response",
+      "description": "Get the response to a previously asked question",
+      "verbose": "",
+      "type": "generic",
+      "read_only": true,
+      "parameters": {},
+      "output": [
+        {
+          "data_path": "action_result.status",
+          "data_type": "string",
+          "column_name": "status",
+          "column_order": 0
+        },
+        {
+          "data_path": "action_result.message",
+          "data_type": "string"
+        },
+        {
+          "data_path": "summary.total_objects",
+          "data_type": "numeric"
+        },
+        {
+          "data_path": "summary.total_objects_successful",
+          "data_type": "numeric"
+        }
+      ],
+      "render": {
+        "type": "table"
+      },
+      "versions": "EQ(*)"
+    },
+    {
+      "action": "ask question",
+      "identifier": "ask_question",
+      "description": "Ask question to specific user",
+      "verbose": "",
+      "type": "generic",
+      "read_only": true,
+      "parameters": {},
+      "output": [
+        {
+          "data_path": "action_result.status",
+          "data_type": "string",
+          "column_name": "status",
+          "column_order": 0
+        },
+        {
+          "data_path": "action_result.message",
+          "data_type": "string"
+        },
+        {
+          "data_path": "summary.total_objects",
+          "data_type": "numeric"
+        },
+        {
+          "data_path": "summary.total_objects_successful",
+          "data_type": "numeric"
+        }
+      ],
+      "render": {
+        "type": "table"
+      },
+      "versions": "EQ(*)"
+    },
+    {
+      "action": "upload file",
+      "identifier": "upload_file",
+      "description": "Send file to specific user",
+      "verbose": "",
+      "type": "generic",
+      "read_only": true,
+      "parameters": {},
+      "output": [
+        {
+          "data_path": "action_result.status",
+          "data_type": "string",
+          "column_name": "status",
+          "column_order": 0
+        },
+        {
+          "data_path": "action_result.message",
+          "data_type": "string"
+        },
+        {
+          "data_path": "summary.total_objects",
+          "data_type": "numeric"
+        },
+        {
+          "data_path": "summary.total_objects_successful",
+          "data_type": "numeric"
+        }
+      ],
+      "render": {
+        "type": "table"
+      },
+      "versions": "EQ(*)"
+    },
+    {
+      "action": "send message",
+      "identifier": "send_message",
+      "description": "Send message to user",
+      "verbose": "",
+      "type": "generic",
+      "read_only": true,
+      "parameters": {},
+      "output": [
+        {
+          "data_path": "action_result.status",
+          "data_type": "string",
+          "column_name": "status",
+          "column_order": 0
+        },
+        {
+          "data_path": "action_result.message",
+          "data_type": "string"
+        },
+        {
+          "data_path": "summary.total_objects",
+          "data_type": "numeric"
+        },
+        {
+          "data_path": "summary.total_objects_successful",
+          "data_type": "numeric"
+        }
+      ],
+      "render": {
+        "type": "table"
+      },
+      "versions": "EQ(*)"
+    }
+  ]
+}
