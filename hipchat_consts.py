@@ -19,6 +19,7 @@ HIPCHAT_CONNECTION_TEST_MSG = 'Querying endpoint to verify the credentials provi
 HIPCHAT_REST_TEST_CONNECTIVITY = '/v2/user'
 HIPCHAT_REST_SEND_MESSAGE = '/v2/user/{user}/message'
 HIPCHAT_REST_RECENT_HISTORY = '/v2/user/{user}/history/latest'
+HIPCHAT_REST_HISTORY = '/v2/user/{user}/history'
 HIPCHAT_TEST_CONNECTIVITY_FAIL = 'Test Connectivity Failed'
 HIPCHAT_TEST_CONNECTIVITY_PASS = 'Test Connectivity Passed'
 HIPCHAT_MISSING_PARAMETER = 'At least one of the parameter must be specified'
