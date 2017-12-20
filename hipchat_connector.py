@@ -205,8 +205,8 @@ class HipchatConnector(BaseConnector):
         url = self._server_url + endpoint
 
         try:
-            r = request_func(url, data=json.dumps(data), headers=headers, verify=self._verify_server_cert, params=params,
-                             timeout=timeout)
+            r = request_func(url, data=json.dumps(data), headers=headers, verify=self._verify_server_cert,
+                             params=params, timeout=timeout)
         except Exception as e:
             return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".
                                                    format(str(e))), resp_json)
@@ -234,51 +234,84 @@ class HipchatConnector(BaseConnector):
         return action_result.set_status(phantom.APP_SUCCESS)
 
     def _handle_get_response(self, param):
+        """ This function is used to get a response of question in HipChat.
 
-        # Implement the handler here
-        # use self.save_progress(...) to send progress messages back to the platform
+        :param param: Dictionary of input parameters.
+        :return: status phantom.APP_SUCCESS/phantom.APP_ERROR
+        """
+
         self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
-
-        # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        """
-        # Access action parameters passed in the 'param' dictionary
-
-        # Required values can be accessed directly
-        required_parameter = param['required_parameter']
-
-        # Optional values should use the .get() function
-        optional_parameter = param.get('optional_parameter', 'default_value')
-        """
-
-        """
-        # make rest call
-        ret_val, response = self._make_rest_call('/endpoint', action_result, params=None, headers=None)
-
-        if (phantom.is_fail(ret_val)):
-            # the call to the 3rd party device or service failed, action result should contain all the error details
-            # so just return from here
+        question_id = param['question_id']
+        username_email = param['username_email']
+        try:
+            response_limit = int(float(param.get('response_limit', 10)))
+        except Exception as e:
+            self.debug_print('Invalid parameter response_limit', e)
+            action_result.set_status(phantom.APP_ERROR, 'Invalid parameter response_limit')
             return action_result.get_status()
 
-        # Now post process the data,  uncomment code as you deem fit
+        # Verify parameters
+        ret_val, user = self._verify_parameters(username_email=username_email, action_result=action_result)
 
-        # Add the response into the data section
-        # action_result.add_data(response)
-        """
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
 
-        action_result.add_data({})
+        # Get message using question_id
+        ret_val, response = self._make_rest_call(endpoint='{0}/{1}'.format(HIPCHAT_REST_HISTORY.format(user=user),
+                                                                           question_id), action_result=action_result)
 
-        # Add a dictionary that is made up of the most important values from data into the summary
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        if response_limit <= 0:
+            self.debug_print('Invalid parameter response_limit')
+            action_result.set_status(phantom.APP_ERROR, 'Invalid parameter response_limit')
+            return action_result.get_status()
+
+        # Get date and user id from response
+        from_id = response['message']['from']['id']
+        end_date = response['message']['date']
+
+        response_list = []
+
+        while True:
+            # end-date sets earliest date to fetch history
+            param = {'end-date': end_date}
+            ret_val, response = self._make_rest_call(endpoint=HIPCHAT_REST_HISTORY.format(user=user),
+                                                     action_result=action_result, params=param)
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
+
+            if len(response['items']) <= 1:
+                break
+
+            # First message is already processed
+            # First time it is a question asked and
+            # from next time it is the last message of previous call
+            for item in response['items'][1:]:
+                if item['from']['id'] != from_id:
+                    temp_dict = {'response': item['message'], 'date': item['date']}
+                    response_list.append(temp_dict)
+                # If response_limit is reached break
+                if len(response_list) == response_limit:
+                    break
+            # else is executed if response_limit is still not reached
+            else:
+                # Get the date of last message
+                end_date = response['items'][-1]['date']
+                continue
+            # If response_limit is reached
+            break
+
+        for item in response_list:
+            action_result.add_data(item)
+
         summary = action_result.update_summary({})
-        summary['important_data'] = "value"
+        summary['response_length'] = action_result.get_data_size()
 
-        # Return success, no need to set the message, only the status
-        # BaseConnector will create a textual message based off of the summary dictionary
-        # return action_result.set_status(phantom.APP_SUCCESS)
-
-        # For now return Error with a message, in case of success we don't set the message, but use the summary
-        return action_result.set_status(phantom.APP_ERROR, "Action not yet implemented")
+        return action_result.set_status(phantom.APP_SUCCESS)
 
     def _handle_ask_question(self, param):
         """ This function is used to ask a question to user in HipChat.
@@ -290,11 +323,10 @@ class HipchatConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         question = param['question']
-        username = param.get('username')
-        email = param.get('email')
+        username_email = param['username_email']
 
         # Verify parameters
-        ret_val, user = self._verify_parameters(username, email, action_result)
+        ret_val, user = self._verify_parameters(username_email, action_result)
 
         if phantom.is_fail(ret_val):
             return action_result.get_status()
@@ -376,32 +408,26 @@ class HipchatConnector(BaseConnector):
         # For now return Error with a message, in case of success we don't set the message, but use the summary
         return action_result.set_status(phantom.APP_ERROR, "Action not yet implemented")
 
-    def _verify_parameters(self, user_name, email, action_result):
+    def _verify_parameters(self, username_email, action_result):
         """ This function is used to verify the parameters.
 
-        :param user_name: username given by user
-        :param email: email given by user
+        :param username_email: username or email given by user
         :param action_result: object of ActionResult class
         :return: status, user
         """
 
-        # If username and email both are not provided
-        if not (user_name or email):
-            self.debug_print(HIPCHAT_MISSING_PARAMETER)
-            return action_result.set_status(phantom.APP_ERROR, HIPCHAT_MISSING_PARAMETER), None
+        # If input is an email
+        if phantom.is_email(username_email):
+            return action_result.set_status(phantom.APP_SUCCESS), username_email
 
-        # If email is provided, directly pass it into API,
-        # otherwise get user_id from method _get_user()
-        if email:
-            user = email
-        else:
-            ret_value, user = self._get_user(user_name, action_result)
+        # If input is not an email
+        ret_value, user = self._get_user(username_email, action_result)
 
-            if phantom.is_fail(ret_value):
-                return action_result.get_status(), None
+        if phantom.is_fail(ret_value):
+            return action_result.get_status(), None
 
-            if not user:
-                return action_result.set_status(phantom.APP_ERROR, status_message='Username not available'), None
+        if not user:
+            return action_result.set_status(phantom.APP_ERROR, status_message='Username not available'), None
 
         return action_result.set_status(phantom.APP_SUCCESS), user
 
@@ -450,10 +476,9 @@ class HipchatConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         message = param['message']
-        username = param.get('username')
-        email = param.get('email')
+        username_email = param.get('username_email')
 
-        ret_val, user = self._verify_parameters(username, email, action_result)
+        ret_val, user = self._verify_parameters(username_email, action_result)
 
         if phantom.is_fail(ret_val):
             return action_result.get_status()

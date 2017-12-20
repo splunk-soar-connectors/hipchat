@@ -54,30 +54,117 @@
       "verbose": "",
       "type": "generic",
       "read_only": true,
-      "parameters": {},
+      "parameters": {
+        "username_email": {
+          "description": "Username or Email",
+          "data_type": "string",
+          "required": true,
+          "primary": true,
+          "contains": [
+            "user name",
+            "email"
+          ],
+          "order": 0
+        },
+        "question_id": {
+          "description": "ID of question",
+          "data_type": "string",
+          "primary": true,
+          "required": true,
+          "order": 1,
+          "contains": [
+            "hipchat question id"
+          ]
+        },
+        "response_limit": {
+          "description": "Response limit",
+          "data_type": "numeric",
+          "order": 2,
+          "default": 10
+        }
+      },
+      "render": {
+        "type": "custom",
+        "view": "hipchat_view.display_view",
+        "title": "Responses"
+      },
       "output": [
+        {
+          "data_path": "action_result.data.*.date",
+          "data_type": "string",
+          "example_values": [
+            "2017-12-19T09:33:33.117252+00:00"
+          ]
+        },
+        {
+          "data_path": "action_result.data.*.response",
+          "data_type": "string",
+          "example_values": [
+            "sample response"
+          ]
+        },
         {
           "data_path": "action_result.status",
           "data_type": "string",
-          "column_name": "status",
-          "column_order": 0
+          "example_values": [
+            "success",
+            "failed"
+          ]
         },
         {
           "data_path": "action_result.message",
-          "data_type": "string"
+          "data_type": "string",
+          "example_values": [
+            "Response length: 7"
+          ]
+        },
+        {
+          "data_path": "action_result.summary.response_length",
+          "data_type": "numeric",
+          "example_values": [
+            7
+          ]
+        },
+        {
+          "data_path": "action_result.parameter.username_email",
+          "data_type": "string",
+          "example_values": [
+            "test user"
+          ],
+          "contains": [
+            "user name",
+            "email"
+          ]
+        },
+        {
+          "data_path": "action_result.parameter.question_id",
+          "data_type": "string",
+          "example_values": [
+            "2a481621-9573-4ab9-8e17-44d47c0d4a09"
+          ]
+        },
+        {
+          "data_path": "action_result.parameter.response_limit",
+          "data_type": "numeric",
+          "example_values": [
+            10
+          ]
         },
         {
           "data_path": "summary.total_objects",
-          "data_type": "numeric"
+          "data_type": "numeric",
+          "example_values": [
+            1
+          ]
         },
         {
           "data_path": "summary.total_objects_successful",
-          "data_type": "numeric"
+          "data_type": "numeric",
+          "example_values": [
+            1
+          ]
         }
       ],
-      "render": {
-        "type": "table"
-      },
       "versions": "EQ(*)"
     },
     {
@@ -88,30 +175,22 @@
       "type": "generic",
       "read_only": true,
       "parameters": {
-        "username": {
-          "description": "Username",
+        "username_email": {
+          "description": "Username or Email",
           "data_type": "string",
           "primary": true,
+          "required": true,
           "contains": [
-            "user name"
-          ],
-          "order": 0
-        },
-        "email": {
-          "description": "email",
-          "data_type": "string",
-          "primary": true,
-          "contains": [
+            "user name",
             "email"
           ],
-          "order": 1
+          "order": 0
         },
         "question": {
           "description": "Question to ask",
           "data_type": "string",
-          "primary": true,
           "required": true,
-          "order": 2
+          "order": 1
         }
       },
       "output": [
@@ -129,7 +208,7 @@
           "data_path": "action_result.status",
           "data_type": "string",
           "column_name": "status",
-          "column_order": 4,
+          "column_order": 3,
           "example_values": [
             "success"
           ]
@@ -151,7 +230,7 @@
             "hipchat question id"
           ],
           "column_name": "Question ID",
-          "column_order": 3
+          "column_order": 2
         },
         {
           "data_path": "action_result.parameter.question",
@@ -160,30 +239,19 @@
             "Asking question from Phantom"
           ],
           "column_name": "Question",
-          "column_order": 2
+          "column_order": 1
         },
         {
-          "data_path": "action_result.parameter.email",
+          "data_path": "action_result.parameter.username_email",
           "data_type": "string",
           "example_values": [
             "test_email@test.com"
           ],
           "contains": [
-            "email"
-          ],
-          "column_name": "Email",
-          "column_order": 1
-        },
-        {
-          "data_path": "action_result.parameter.username",
-          "data_type": "string",
-          "example_values": [
-            "test user"
-          ],
-          "contains": [
+            "email",
             "user name"
           ],
-          "column_name": "Username",
+          "column_name": "Username/Email",
           "column_order": 0
         },
         {
@@ -247,30 +315,22 @@
       "type": "generic",
       "read_only": true,
       "parameters": {
-        "username": {
-          "description": "Username",
+        "username_email": {
+          "description": "Username or Email",
           "data_type": "string",
           "primary": true,
+          "required": true,
           "contains": [
-            "user name"
-          ],
-          "order": 0
-        },
-        "email": {
-          "description": "email",
-          "data_type": "string",
-          "primary": true,
-          "contains": [
+            "user name",
             "email"
           ],
-          "order": 1
+          "order": 0
         },
         "message": {
           "description": "Message to send",
           "data_type": "string",
-          "primary": true,
           "required": true,
-          "order": 2
+          "order": 1
         }
       },
       "output": [
@@ -282,7 +342,7 @@
             "failed"
           ],
           "column_name": "Status",
-          "column_order": 3
+          "column_order": 2
         },
         {
           "data_path": "action_result.message",
@@ -291,7 +351,7 @@
             "Message sent"
           ],
           "column_name": "Status Message",
-          "column_order": 4
+          "column_order": 3
         },
         {
           "data_path": "summary.total_objects",
@@ -301,28 +361,17 @@
           ]
         },
         {
-          "data_path": "action_result.parameter.username",
+          "data_path": "action_result.parameter.username_email",
           "data_type": "string",
           "example_values": [
             "test user"
           ],
           "contains": [
-            "user name"
-          ],
-          "column_name": "Username",
-          "column_order": 0
-        },
-        {
-          "data_path": "action_result.parameter.email",
-          "data_type": "string",
-          "example_values": [
-            "test_email@test.com"
-          ],
-          "contains": [
+            "user name",
             "email"
           ],
-          "column_name": "Email",
-          "column_order": 1
+          "column_name": "Username/Email",
+          "column_order": 0
         },
         {
           "data_path": "action_result.parameter.message",
@@ -331,7 +380,7 @@
             "Test message"
           ],
           "column_name": "Message",
-          "column_order": 2
+          "column_order": 1
         },
         {
           "data_path": "summary.total_objects_successful",
