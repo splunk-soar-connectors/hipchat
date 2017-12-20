@@ -104,6 +104,16 @@
           ]
         },
         {
+          "data_path": "action_result.data.*.file_name",
+          "data_type": "string",
+          "example_values": [
+            "sample file"
+          ],
+          "contains": [
+            "file name"
+          ]
+        },
+        {
           "data_path": "action_result.status",
           "data_type": "string",
           "example_values": [
@@ -141,6 +151,9 @@
           "data_type": "string",
           "example_values": [
             "2a481621-9573-4ab9-8e17-44d47c0d4a09"
+          ],
+          "contains": [
+            "hipchat question id"
           ]
         },
         {
@@ -281,25 +294,101 @@
       "verbose": "",
       "type": "generic",
       "read_only": true,
-      "parameters": {},
+      "parameters": {
+        "username_email": {
+          "description": "Username or Email",
+          "data_type": "string",
+          "primary": true,
+          "required": true,
+          "contains": [
+            "user name",
+            "email"
+          ],
+          "order": 0
+        },
+        "vault_id": {
+          "description": "Vault ID of file to send",
+          "data_type": "string",
+          "primary": true,
+          "required": true,
+          "contains": [
+            "vault id",
+            "sha1"
+          ],
+          "order": 1
+        },
+        "message": {
+          "description": "Message to send with file",
+          "data_type": "string",
+          "order": 2
+        }
+      },
       "output": [
         {
           "data_path": "action_result.status",
           "data_type": "string",
-          "column_name": "status",
-          "column_order": 0
+          "column_name": "Status",
+          "column_order": 3,
+          "example_values": [
+            "success",
+            "failed"
+          ]
         },
         {
           "data_path": "action_result.message",
-          "data_type": "string"
+          "data_type": "string",
+          "example_values": [
+            "File uploaded successfully"
+          ]
+        },
+        {
+          "data_path": "action_result.parameter.message",
+          "data_type": "string",
+          "example_values": [
+            "test message"
+          ],
+          "column_name": "Message",
+          "column_order": 2
+        },
+        {
+          "data_path": "action_result.parameter.username_email",
+          "data_type": "string",
+          "example_values": [
+            "farhan.bhoraniya@crestdatasys.com"
+          ],
+          "contains": [
+            "email",
+            "user name"
+          ],
+          "column_name": "Username/Email",
+          "column_order": 0
+        },
+        {
+          "data_path": "action_result.parameter.vault_id",
+          "data_type": "string",
+          "example_values": [
+            "343c4d96e55471f29a5f5717ad2157513d45bbf4"
+          ],
+          "contains": [
+            "sha1",
+            "vault id"
+          ],
+          "column_name": "Vault ID",
+          "column_order": 1
         },
         {
           "data_path": "summary.total_objects",
-          "data_type": "numeric"
+          "data_type": "numeric",
+          "example_values": [
+            1
+          ]
         },
         {
           "data_path": "summary.total_objects_successful",
-          "data_type": "numeric"
+          "data_type": "numeric",
+          "example_values": [
+            1
+          ]
         }
       ],
       "render": {
