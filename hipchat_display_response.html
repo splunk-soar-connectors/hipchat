@@ -120,15 +120,24 @@ of Phantom Cyber Corporation.
         <table class="phantom-table dataTable">
             <thead>
                 <tr>
-                    <th class="widget-th">Response</th>
                     <th class="widget-th">Date</th>
+                    <th class="widget-th">Response</th>
+                    <th class="widget-th">File</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in result.data %}
                     <tr>
-                        <td class="widget-td">{{ item.response }}</td>
                         <td class="widget-td">{{ item.date }}</td>
+                        <td class="widget-td">{{ item.response }}</td>
+
+                        <td class="widget-td">
+                            <a style="color: #505050" href="javascript:;" onclick="context_menu(this, [{'contains': ['file name'], 'value': '{{ item.file_name }}' }], 0, {{ container.id }}, null, false);">
+                                {{ item.file_name }}
+                                &nbsp;
+                                <span class="fa fa-caret-down" style="font-size: smaller;"></span>
+                            </a>
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>

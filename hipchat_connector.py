@@ -16,11 +16,13 @@
 import phantom.app as phantom
 from phantom.base_connector import BaseConnector
 from phantom.action_result import ActionResult
+from phantom.vault import Vault
 
 # Usage of the consts file is recommended
 from hipchat_consts import *
 import requests
 import json
+import os
 from bs4 import BeautifulSoup
 
 
@@ -189,7 +191,11 @@ class HipchatConnector(BaseConnector):
         if not headers:
             headers = dict()
 
-        headers['Content-Type'] = 'application/json'
+        if self.get_action_identifier() == 'upload_file':
+            headers = {'Content-type': 'multipart/related; boundary={boundary}'.
+                format(boundary=HIPCHAT_PAYLOAD_BOUNDARY)}
+        else:
+            headers['Content-Type'] = 'application/json'
 
         if not params:
             params = dict()
@@ -205,7 +211,7 @@ class HipchatConnector(BaseConnector):
         url = self._server_url + endpoint
 
         try:
-            r = request_func(url, data=json.dumps(data), headers=headers, verify=self._verify_server_cert,
+            r = request_func(url, data=data, headers=headers, verify=self._verify_server_cert,
                              params=params, timeout=timeout)
         except Exception as e:
             return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".
@@ -293,6 +299,15 @@ class HipchatConnector(BaseConnector):
             for item in response['items'][1:]:
                 if item['from']['id'] != from_id:
                     temp_dict = {'response': item['message'], 'date': item['date']}
+                    if item.get('file'):
+                        file_url = item['file']['url']
+                        file_name = item['file']['name']
+                        ret_val = self._get_file(file_url, file_name, action_result)
+
+                        if phantom.is_fail(ret_val):
+                            return action_result.get_status()
+                        temp_dict['file_name'] = file_name
+
                     response_list.append(temp_dict)
                 # If response_limit is reached break
                 if len(response_list) == response_limit:
@@ -312,6 +327,46 @@ class HipchatConnector(BaseConnector):
         summary['response_length'] = action_result.get_data_size()
 
         return action_result.set_status(phantom.APP_SUCCESS)
+
+    def _get_file(self, file_url, file_name, action_result):
+        """ This function is used to get the file from passed url.
+
+        :param file_url: URL of file to download from
+        :param file_name: Name of file to save as
+        :param action_result: Object of Action Result class
+        :return status (phantom.APP_SUCCESS, phantom.APP_ERROR)
+        """
+
+        try:
+            # Call url to get the file data
+            r = requests.get(file_url, verify=self._verify_server_cert)
+        except Exception as e:
+            self.debug_print("Error connecting to server. Details: {0}".format(str(e)))
+            action_result.set_status(phantom.APP_ERROR, 'Error Connecting to server. Details: {0}'.format(str(e)))
+            return action_result.get_status()
+
+        # If API call fails
+        if r.status_code != 200:
+            action_result.set_status(phantom.APP_ERROR, 'Error while getting data')
+            return action_result.get_status()
+
+        file_path = os.path.join(self.get_state_dir(), file_name)
+
+        # Write response date into file
+        with open(file_path, 'wb') as f:
+            for chunk in r:
+                f.write(chunk)
+
+        # Add file into vault
+        status = Vault.add_attachment(file_location=file_path, container_id=self.get_container_id(),
+                                      file_name=file_name)
+
+        if not status['succeeded']:
+            action_result.set_status(phantom.APP_ERROR, 'Error while adding file into Vault')
+            return action_result.get_status()
+
+        action_result.set_status(phantom.APP_SUCCESS)
+        return action_result.get_status()
 
     def _handle_ask_question(self, param):
         """ This function is used to ask a question to user in HipChat.
@@ -335,7 +390,7 @@ class HipchatConnector(BaseConnector):
 
         # Ask question
         ret_val, response = self._make_rest_call(endpoint=HIPCHAT_REST_SEND_MESSAGE.format(user=user),
-                                                 action_result=action_result, method='post', data=data)
+                                                 action_result=action_result, method='post', data=json.dumps(data))
 
         if phantom.is_fail(ret_val):
             return action_result.get_status()
@@ -362,51 +417,49 @@ class HipchatConnector(BaseConnector):
         return action_result.set_status(phantom.APP_SUCCESS)
 
     def _handle_upload_file(self, param):
+        """ This function is used to share the file with HipChat user.
 
-        # Implement the handler here
-        # use self.save_progress(...) to send progress messages back to the platform
+        :param param: Dictionary of input parameters
+        :return: status phantom.APP_SUCCESS/phantom.APP_ERROR
+        """
+
         self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
-
-        # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        """
-        # Access action parameters passed in the 'param' dictionary
+        username_email = param['username_email']
+        vault_id = param['vault_id']
+        message = param.get('message', '')
 
-        # Required values can be accessed directly
-        required_parameter = param['required_parameter']
+        # Verify parameters
+        ret_val, user = self._verify_parameters(username_email, action_result)
 
-        # Optional values should use the .get() function
-        optional_parameter = param.get('optional_parameter', 'default_value')
-        """
-
-        """
-        # make rest call
-        ret_val, response = self._make_rest_call('/endpoint', action_result, params=None, headers=None)
-
-        if (phantom.is_fail(ret_val)):
-            # the call to the 3rd party device or service failed, action result should contain all the error details
-            # so just return from here
+        if phantom.is_fail(ret_val):
             return action_result.get_status()
 
-        # Now post process the data,  uncomment code as you deem fit
+        vault_file_info = Vault.get_file_info(vault_id=vault_id)
 
-        # Add the response into the data section
-        # action_result.add_data(response)
-        """
+        if not vault_file_info:
+            self.debug_print('Invalid parameter vault_id')
+            action_result.set_status(phantom.APP_ERROR, 'Invalid parameter vault_id')
+            return action_result.get_status()
 
-        action_result.add_data({})
+        msg = json.dumps({'message': message})
 
-        # Add a dictionary that is made up of the most important values from data into the summary
-        summary = action_result.update_summary({})
-        summary['important_data'] = "value"
+        with open(vault_file_info[0]['path'], 'rb') as vault_file:
+            vault_file_data = vault_file.read()
 
-        # Return success, no need to set the message, only the status
-        # BaseConnector will create a textual message based off of the summary dictionary
-        # return action_result.set_status(phantom.APP_SUCCESS)
+        payload = HIPCHAT_UPLOAD_FILE_PAYLOAD.format(message=msg, file_data=vault_file_data,
+                                                     boundary=HIPCHAT_PAYLOAD_BOUNDARY,
+                                                     file_name=vault_file_info[0]['name'])
 
-        # For now return Error with a message, in case of success we don't set the message, but use the summary
-        return action_result.set_status(phantom.APP_ERROR, "Action not yet implemented")
+        # make rest call
+        ret_val, response = self._make_rest_call(endpoint=HIPCHAT_REST_UPLOAD_FILE.format(user=user),
+                                                 action_result=action_result, data=payload, method='post')
+
+        if (phantom.is_fail(ret_val)):
+            return action_result.get_status()
+
+        return action_result.set_status(phantom.APP_SUCCESS, 'File uploaded successfully')
 
     def _verify_parameters(self, username_email, action_result):
         """ This function is used to verify the parameters.
@@ -486,7 +539,7 @@ class HipchatConnector(BaseConnector):
         data = {'message': message}
 
         ret_val, response = self._make_rest_call(HIPCHAT_REST_SEND_MESSAGE.format(user=user), action_result,
-                                                 method='post', data=data)
+                                                 method='post', data=json.dumps(data))
 
         if phantom.is_fail(ret_val):
             return action_result.get_status()

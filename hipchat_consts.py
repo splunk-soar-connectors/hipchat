@@ -20,6 +20,20 @@ HIPCHAT_REST_TEST_CONNECTIVITY = '/v2/user'
 HIPCHAT_REST_SEND_MESSAGE = '/v2/user/{user}/message'
 HIPCHAT_REST_RECENT_HISTORY = '/v2/user/{user}/history/latest'
 HIPCHAT_REST_HISTORY = '/v2/user/{user}/history'
+HIPCHAT_REST_UPLOAD_FILE = '/v2/user/{user}/share/file'
 HIPCHAT_TEST_CONNECTIVITY_FAIL = 'Test Connectivity Failed'
 HIPCHAT_TEST_CONNECTIVITY_PASS = 'Test Connectivity Passed'
 HIPCHAT_MISSING_PARAMETER = 'At least one of the parameter must be specified'
+HIPCHAT_PAYLOAD_BOUNDARY = 'phantom_boundary'
+HIPCHAT_UPLOAD_FILE_PAYLOAD = """\
+--{boundary}
+Content-Type: application/json; charset=UTF-8
+Content-Disposition: attachment; name="metadata"
+
+{message}
+--{boundary}
+Content-Disposition: attachment; name="file"; filename="{file_name}"
+
+{file_data}
+--{boundary}--\
+"""
