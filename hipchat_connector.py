@@ -403,6 +403,41 @@ class HipchatConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
+    def _handle_list_users(self, param):
+        """ This function is used to list all users.
+
+        :param param: Dictionary of input parameters
+        :return: status phantom.APP_SUCCESS/phantom.APP_ERROR
+        """
+
+        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        start_index = 0
+
+        while True:
+
+            param = {'start-index': start_index}
+            ret_val, response = self._make_rest_call(endpoint=HIPCHAT_REST_TEST_CONNECTIVITY, params=param,
+                                                     action_result=action_result)
+
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
+
+            # If room details are empty in response
+            if not response['items']:
+                break
+
+            for room in response['items']:
+                action_result.add_data(room)
+
+            start_index += 100
+
+        summary = action_result.update_summary({})
+        summary['total_users'] = action_result.get_data_size()
+
+        return action_result.set_status(phantom.APP_SUCCESS)
+
     def handle_action(self, param):
         """ This function gets current action identifier and calls member function of its own to handle the action.
 
@@ -417,7 +452,8 @@ class HipchatConnector(BaseConnector):
             'test_connectivity': self._handle_test_connectivity,
             'upload_file': self._handle_upload_file,
             'send_message': self._handle_send_message,
-            'list_rooms': self._handle_list_rooms
+            'list_rooms': self._handle_list_rooms,
+            'list_users': self._handle_list_users
         }
 
         action = self.get_action_identifier()

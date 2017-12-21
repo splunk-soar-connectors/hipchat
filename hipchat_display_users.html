@@ -14,7 +14,7 @@
 {% block widget_content %} <!-- Main Start Block -->
 
 <!--
-File: hipchat_display_rooms.html
+File: hipchat_display_users.html
 
 Copyright (c) Phantom Cyber Corporation, 2017
 
@@ -68,37 +68,35 @@ of Phantom Cyber Corporation.
 
     {% for result in results %} <!-- loop for each result -->
     {% if not result.data %}
-        <h4 class="wf-h4-style">No rooms found</h4>
+        <h4 class="wf-h4-style">No users found</h4>
     {% else %}
 
-    <h4 class="wf-h4-style">Rooms</h4>
+    <h4 class="wf-h4-style">Users</h4>
     <div class="rooms_table">
         <table class="phantom-table dataTable">
             <thead>
                 <tr>
-                    <th class="widget-th">Room ID</th>
-                    <th class="widget-th">Room name</th>
-                    <th class="widget-th">Privacy</th>
+                    <th class="widget-th">User ID</th>
+                    <th class="widget-th">User name</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in result.data %}
                     <tr>
                         <td class="widget-td">
-                            <a style="color: #505050" href="javascript:;" onclick="context_menu(this, [{'contains': ['hipchat room id'], 'value': '{{ item.id }}' }], 0, {{ container.id }}, null, false);">
+                            <a style="color: #505050" href="javascript:;" onclick="context_menu(this, [{'contains': ['hipchat user id'], 'value': '{{ item.id }}' }], 0, {{ container.id }}, null, false);">
                                 {{ item.id }}
                                 &nbsp;
                                 <span class="fa fa-caret-down" style="font-size: smaller;"></span>
                             </a>
                         </td>
                         <td class="widget-td">
-                            <a style="color: #505050" href="javascript:;" onclick="context_menu(this, [{'contains': ['hipchat room name'], 'value': '{{ item.name }}' }], 0, {{ container.id }}, null, false);">
+                            <a style="color: #505050" href="javascript:;" onclick="context_menu(this, [{'contains': ['hipchat user name'], 'value': '{{ item.name }}' }], 0, {{ container.id }}, null, false);">
                                 {{ item.name }}
                                 &nbsp;
                                 <span class="fa fa-caret-down" style="font-size: smaller;"></span>
                             </a>
                         </td>
-                        <td class="widget-td">{{ item.privacy }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
