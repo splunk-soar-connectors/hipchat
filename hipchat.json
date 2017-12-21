@@ -48,180 +48,102 @@
       "versions": "EQ(*)"
     },
     {
-      "action": "get response",
-      "identifier": "get_response",
-      "description": "Get the response to a previously asked question",
-      "verbose": "",
-      "type": "generic",
+      "action": "list rooms",
+      "identifier": "list_rooms",
+      "description": "List non-archived rooms",
+      "type": "investigate",
       "read_only": true,
-      "parameters": {
-        "username_email": {
-          "description": "Username or Email",
-          "data_type": "string",
-          "required": true,
-          "primary": true,
-          "contains": [
-            "user name",
-            "email"
-          ],
-          "order": 0
-        },
-        "question_id": {
-          "description": "ID of question",
-          "data_type": "string",
-          "primary": true,
-          "required": true,
-          "order": 1,
-          "contains": [
-            "hipchat question id"
-          ]
-        },
-        "response_limit": {
-          "description": "Response limit",
-          "data_type": "numeric",
-          "order": 2,
-          "default": 10
-        }
-      },
+      "parameters": {},
       "render": {
         "type": "custom",
-        "view": "hipchat_view.display_view",
-        "title": "Responses"
+        "view": "hipchat_view.display_view"
       },
       "output": [
         {
-          "data_path": "action_result.data.*.date",
+          "data_path": "action_result.data.*.name",
           "data_type": "string",
           "example_values": [
-            "2017-12-19T09:33:33.117252+00:00"
-          ]
-        },
-        {
-          "data_path": "action_result.data.*.response",
-          "data_type": "string",
-          "example_values": [
-            "sample response"
-          ]
-        },
-        {
-          "data_path": "action_result.data.*.file_name",
-          "data_type": "string",
-          "example_values": [
-            "sample file"
+            "Default"
           ],
           "contains": [
-            "file name"
+            "hipchat room name"
+          ]
+        },
+        {
+          "data_path": "action_result.data.*.links.self",
+          "data_type": "string",
+          "example_values": [
+            "https://hipchat.cds.com/v2/room/1"
+          ],
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "data_path": "action_result.data.*.links.webhooks",
+          "data_type": "string",
+          "example_values": [
+            "https://hipchat.cds.com/v2/room/1/webhook"
+          ],
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "data_path": "action_result.data.*.links.participants",
+          "data_type": "string",
+          "example_values": [
+            "https://hipchat.cds.com/v2/room/1/participant"
+          ],
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "data_path": "action_result.data.*.privacy",
+          "data_type": "string",
+          "example_values": [
+            "public"
+          ]
+        },
+        {
+          "data_path": "action_result.data.*.is_archived",
+          "data_type": "boolean",
+          "example_values": [
+            true,
+            false
+          ]
+        },
+        {
+          "data_path": "action_result.data.*.version",
+          "data_type": "string",
+          "example_values": [
+            "C1MNIO9A"
+          ]
+        },
+        {
+          "data_path": "action_result.data.*.id",
+          "data_type": "numeric",
+          "example_values": [
+            1
+          ],
+          "contains": [
+            "hipchat room id"
+          ]
+        },
+        {
+          "data_path": "action_result.data.*.links.members",
+          "data_type": "string",
+          "example_values": [
+            "https://hipchat.cds.com/v2/room/104/member"
+          ],
+          "contains": [
+            "url"
           ]
         },
         {
           "data_path": "action_result.status",
           "data_type": "string",
-          "example_values": [
-            "success",
-            "failed"
-          ]
-        },
-        {
-          "data_path": "action_result.message",
-          "data_type": "string",
-          "example_values": [
-            "Response length: 7"
-          ]
-        },
-        {
-          "data_path": "action_result.summary.response_length",
-          "data_type": "numeric",
-          "example_values": [
-            7
-          ]
-        },
-        {
-          "data_path": "action_result.parameter.username_email",
-          "data_type": "string",
-          "example_values": [
-            "test user"
-          ],
-          "contains": [
-            "user name",
-            "email"
-          ]
-        },
-        {
-          "data_path": "action_result.parameter.question_id",
-          "data_type": "string",
-          "example_values": [
-            "2a481621-9573-4ab9-8e17-44d47c0d4a09"
-          ],
-          "contains": [
-            "hipchat question id"
-          ]
-        },
-        {
-          "data_path": "action_result.parameter.response_limit",
-          "data_type": "numeric",
-          "example_values": [
-            10
-          ]
-        },
-        {
-          "data_path": "summary.total_objects",
-          "data_type": "numeric",
-          "example_values": [
-            1
-          ]
-        },
-        {
-          "data_path": "summary.total_objects_successful",
-          "data_type": "numeric",
-          "example_values": [
-            1
-          ]
-        }
-      ],
-      "versions": "EQ(*)"
-    },
-    {
-      "action": "ask question",
-      "identifier": "ask_question",
-      "description": "Ask question to specific user",
-      "verbose": "",
-      "type": "generic",
-      "read_only": true,
-      "parameters": {
-        "username_email": {
-          "description": "Username or Email",
-          "data_type": "string",
-          "primary": true,
-          "required": true,
-          "contains": [
-            "user name",
-            "email"
-          ],
-          "order": 0
-        },
-        "question": {
-          "description": "Question to ask",
-          "data_type": "string",
-          "required": true,
-          "order": 1
-        }
-      },
-      "output": [
-        {
-          "data_path": "action_result.data.*.question_id",
-          "data_type": "string",
-          "example_values": [
-            "f2352660-2be5-41e3-ba97-361ec29df7c6"
-          ],
-          "contains": [
-            "hipchat question id"
-          ]
-        },
-        {
-          "data_path": "action_result.status",
-          "data_type": "string",
-          "column_name": "status",
-          "column_order": 3,
           "example_values": [
             "success"
           ]
@@ -230,42 +152,15 @@
           "data_path": "action_result.message",
           "data_type": "string",
           "example_values": [
-            "Question id: f2352660-2be5-41e3-ba97-361ec29df7c6"
+            "Total rooms: 104"
           ]
         },
         {
-          "data_path": "action_result.summary.question_id",
-          "data_type": "string",
+          "data_path": "action_result.summary.total_rooms",
+          "data_type": "numeric",
           "example_values": [
-            "f2352660-2be5-41e3-ba97-361ec29df7c6"
-          ],
-          "contains": [
-            "hipchat question id"
-          ],
-          "column_name": "Question ID",
-          "column_order": 2
-        },
-        {
-          "data_path": "action_result.parameter.question",
-          "data_type": "string",
-          "example_values": [
-            "Asking question from Phantom"
-          ],
-          "column_name": "Question",
-          "column_order": 1
-        },
-        {
-          "data_path": "action_result.parameter.username_email",
-          "data_type": "string",
-          "example_values": [
-            "test_email@test.com"
-          ],
-          "contains": [
-            "email",
-            "user name"
-          ],
-          "column_name": "Username/Email",
-          "column_order": 0
+            104
+          ]
         },
         {
           "data_path": "summary.total_objects",
@@ -282,9 +177,6 @@
           ]
         }
       ],
-      "render": {
-        "type": "table"
-      },
       "versions": "EQ(*)"
     },
     {

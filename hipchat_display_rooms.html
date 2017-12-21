@@ -14,7 +14,7 @@
 {% block widget_content %} <!-- Main Start Block -->
 
 <!--
-File: hipchat_display_response.html
+File: hipchat_display_rooms.html
 
 Copyright (c) Phantom Cyber Corporation, 2017
 
@@ -57,7 +57,7 @@ of Phantom Cyber Corporation.
     font-weight: bold;
     }
 
-    .hipchat .response_table {
+    .hipchat .rooms_table {
         width: 100%;
         overflow-x: auto;
     }
@@ -82,62 +82,37 @@ of Phantom Cyber Corporation.
 
     {% for result in results %} <!-- loop for each result -->
     {% if not result.data %}
-        <h4 class="wf-h4-style">No response found</h4>
+        <h4 class="wf-h4-style">No rooms found</h4>
     {% else %}
-    <h4 class="wf-h4-style">Info</h4>
-    <table class="wf-table-vertical">
-        <tr>
-            <td style="border-bottom: 1px solid #e7e9ec">Username/Email</td>
-            <td class="widget-td">
-                <a style="color: #505050" href="javascript:;" onclick="context_menu(this, [{'contains': ['user name', 'email'], 'value': '{{ result.param.username_email }}' }], 0, {{ container.id }}, null, false);">
-                    {{ result.param.username_email }}
-                    &nbsp;
-                    <span class="fa fa-caret-down" style="font-size: smaller;"></span>
-                </a>
-            </td>
-        </tr>
-        <tr>
-            <td style="border-bottom: 1px solid #e7e9ec">Question ID</td>
-            <td class="widget-td">
-                <a style="color: #505050" href="javascript:;" onclick="context_menu(this, [{'contains': ['hipchat question id'], 'value': '{{ result.param.question_id }}' }], 0, {{ container.id }}, null, false);">
-                    {{ result.param.question_id }}
-                    &nbsp;
-                    <span class="fa fa-caret-down" style="font-size: smaller;"></span>
-                </a>
-            </td>
-        </tr>
-        <tr>
-            {% if result.param.response_limit %}
-                <td style="border-bottom: 1px solid #e7e9ec">Response limit</td>
-                <td class="widget-td">{{ result.param.response_limit }}</td>
-            {% endif %}
-        </tr>
-    </table>
-    <br>
 
-    <h4 class="wf-h4-style">Responses</h4>
-    <div class="response_table">
+    <h4 class="wf-h4-style">Rooms</h4>
+    <div class="rooms_table">
         <table class="phantom-table dataTable">
             <thead>
                 <tr>
-                    <th class="widget-th">Date</th>
-                    <th class="widget-th">Response</th>
-                    <th class="widget-th">File</th>
+                    <th class="widget-th">Room ID</th>
+                    <th class="widget-th">Room name</th>
+                    <th class="widget-th">Privacy</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in result.data %}
                     <tr>
-                        <td class="widget-td">{{ item.date }}</td>
-                        <td class="widget-td">{{ item.response }}</td>
-
                         <td class="widget-td">
-                            <a style="color: #505050" href="javascript:;" onclick="context_menu(this, [{'contains': ['file name'], 'value': '{{ item.file_name }}' }], 0, {{ container.id }}, null, false);">
-                                {{ item.file_name }}
+                            <a style="color: #505050" href="javascript:;" onclick="context_menu(this, [{'contains': ['hipchat room id'], 'value': '{{ item.id }}' }], 0, {{ container.id }}, null, false);">
+                                {{ item.id }}
                                 &nbsp;
                                 <span class="fa fa-caret-down" style="font-size: smaller;"></span>
                             </a>
                         </td>
+                        <td class="widget-td">
+                            <a style="color: #505050" href="javascript:;" onclick="context_menu(this, [{'contains': ['hipchat room name'], 'value': '{{ item.name }}' }], 0, {{ container.id }}, null, false);">
+                                {{ item.name }}
+                                &nbsp;
+                                <span class="fa fa-caret-down" style="font-size: smaller;"></span>
+                            </a>
+                        </td>
+                        <td class="widget-td">{{ item.privacy }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
