@@ -22,7 +22,6 @@ from phantom.vault import Vault
 from hipchat_consts import *
 import requests
 import json
-import os
 from bs4 import BeautifulSoup
 
 
@@ -239,183 +238,6 @@ class HipchatConnector(BaseConnector):
         self.save_progress(HIPCHAT_TEST_CONNECTIVITY_PASS)
         return action_result.set_status(phantom.APP_SUCCESS)
 
-    def _handle_get_response(self, param):
-        """ This function is used to get a response of question in HipChat.
-
-        :param param: Dictionary of input parameters.
-        :return: status phantom.APP_SUCCESS/phantom.APP_ERROR
-        """
-
-        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
-        action_result = self.add_action_result(ActionResult(dict(param)))
-
-        question_id = param['question_id']
-        username_email = param['username_email']
-        try:
-            response_limit = int(float(param.get('response_limit', 10)))
-        except Exception as e:
-            self.debug_print('Invalid parameter response_limit', e)
-            action_result.set_status(phantom.APP_ERROR, 'Invalid parameter response_limit')
-            return action_result.get_status()
-
-        # Verify parameters
-        ret_val, user = self._verify_parameters(username_email=username_email, action_result=action_result)
-
-        if phantom.is_fail(ret_val):
-            return action_result.get_status()
-
-        # Get message using question_id
-        ret_val, response = self._make_rest_call(endpoint='{0}/{1}'.format(HIPCHAT_REST_HISTORY.format(user=user),
-                                                                           question_id), action_result=action_result)
-
-        if phantom.is_fail(ret_val):
-            return action_result.get_status()
-
-        if response_limit <= 0:
-            self.debug_print('Invalid parameter response_limit')
-            action_result.set_status(phantom.APP_ERROR, 'Invalid parameter response_limit')
-            return action_result.get_status()
-
-        # Get date and user id from response
-        from_id = response['message']['from']['id']
-        end_date = response['message']['date']
-
-        response_list = []
-
-        while True:
-            # end-date sets earliest date to fetch history
-            param = {'end-date': end_date}
-            ret_val, response = self._make_rest_call(endpoint=HIPCHAT_REST_HISTORY.format(user=user),
-                                                     action_result=action_result, params=param)
-            if phantom.is_fail(ret_val):
-                return action_result.get_status()
-
-            if len(response['items']) <= 1:
-                break
-
-            # First message is already processed
-            # First time it is a question asked and
-            # from next time it is the last message of previous call
-            for item in response['items'][1:]:
-                if item['from']['id'] != from_id:
-                    temp_dict = {'response': item['message'], 'date': item['date']}
-                    if item.get('file'):
-                        file_url = item['file']['url']
-                        file_name = item['file']['name']
-                        ret_val = self._get_file(file_url, file_name, action_result)
-
-                        if phantom.is_fail(ret_val):
-                            return action_result.get_status()
-                        temp_dict['file_name'] = file_name
-
-                    response_list.append(temp_dict)
-                # If response_limit is reached break
-                if len(response_list) == response_limit:
-                    break
-            # else is executed if response_limit is still not reached
-            else:
-                # Get the date of last message
-                end_date = response['items'][-1]['date']
-                continue
-            # If response_limit is reached
-            break
-
-        for item in response_list:
-            action_result.add_data(item)
-
-        summary = action_result.update_summary({})
-        summary['response_length'] = action_result.get_data_size()
-
-        return action_result.set_status(phantom.APP_SUCCESS)
-
-    def _get_file(self, file_url, file_name, action_result):
-        """ This function is used to get the file from passed url.
-
-        :param file_url: URL of file to download from
-        :param file_name: Name of file to save as
-        :param action_result: Object of Action Result class
-        :return status (phantom.APP_SUCCESS, phantom.APP_ERROR)
-        """
-
-        try:
-            # Call url to get the file data
-            r = requests.get(file_url, verify=self._verify_server_cert)
-        except Exception as e:
-            self.debug_print("Error connecting to server. Details: {0}".format(str(e)))
-            action_result.set_status(phantom.APP_ERROR, 'Error Connecting to server. Details: {0}'.format(str(e)))
-            return action_result.get_status()
-
-        # If API call fails
-        if r.status_code != 200:
-            action_result.set_status(phantom.APP_ERROR, 'Error while getting data')
-            return action_result.get_status()
-
-        file_path = os.path.join(self.get_state_dir(), file_name)
-
-        # Write response date into file
-        with open(file_path, 'wb') as f:
-            for chunk in r:
-                f.write(chunk)
-
-        # Add file into vault
-        status = Vault.add_attachment(file_location=file_path, container_id=self.get_container_id(),
-                                      file_name=file_name)
-
-        if not status['succeeded']:
-            action_result.set_status(phantom.APP_ERROR, 'Error while adding file into Vault')
-            return action_result.get_status()
-
-        action_result.set_status(phantom.APP_SUCCESS)
-        return action_result.get_status()
-
-    def _handle_ask_question(self, param):
-        """ This function is used to ask a question to user in HipChat.
-
-        :param param: Dictionary of input parameters.
-        :return: status phantom.APP_SUCCESS/phantom.APP_ERROR
-        """
-        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
-        action_result = self.add_action_result(ActionResult(dict(param)))
-
-        question = param['question']
-        username_email = param['username_email']
-
-        # Verify parameters
-        ret_val, user = self._verify_parameters(username_email, action_result)
-
-        if phantom.is_fail(ret_val):
-            return action_result.get_status()
-
-        data = {'message': question}
-
-        # Ask question
-        ret_val, response = self._make_rest_call(endpoint=HIPCHAT_REST_SEND_MESSAGE.format(user=user),
-                                                 action_result=action_result, method='post', data=json.dumps(data))
-
-        if phantom.is_fail(ret_val):
-            return action_result.get_status()
-
-        # Get last message
-        param = dict({'max-results': 1})
-
-        ret_val, response = self._make_rest_call(HIPCHAT_REST_RECENT_HISTORY.format(user=user), params=param,
-                                                 action_result=action_result)
-
-        if phantom.is_fail(ret_val):
-            return action_result.get_status()
-
-        # Get ID of last message
-        question_id = None
-        if response['items']:
-            question_id = response['items'][0]['id']
-
-        action_result.add_data({'question_id': question_id})
-
-        summary = action_result.update_summary({})
-        summary['question_id'] = question_id
-
-        return action_result.set_status(phantom.APP_SUCCESS)
-
     def _handle_upload_file(self, param):
         """ This function is used to share the file with HipChat user.
 
@@ -546,6 +368,41 @@ class HipchatConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_SUCCESS, status_message='Message sent')
 
+    def _handle_list_rooms(self, param):
+        """ This function is used to list all non-archived rooms.
+
+        :param param: Dictionary of input parameters
+        :return: status phantom.APP_SUCCESS/phantom.APP_ERROR
+        """
+
+        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        start_index = 0
+
+        while True:
+
+            param = {'start-index': start_index}
+            ret_val, response = self._make_rest_call(endpoint=HIPCHAT_REST_LIST_ROOMS, action_result=action_result,
+                                                     params=param)
+
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
+
+            # If room details are empty in response
+            if not response['items']:
+                break
+
+            for room in response['items']:
+                action_result.add_data(room)
+
+            start_index += 100
+
+        summary = action_result.update_summary({})
+        summary['total_rooms'] = action_result.get_data_size()
+
+        return action_result.set_status(phantom.APP_SUCCESS)
+
     def handle_action(self, param):
         """ This function gets current action identifier and calls member function of its own to handle the action.
 
@@ -558,10 +415,9 @@ class HipchatConnector(BaseConnector):
         # Dictionary mapping each action with its corresponding actions
         action_mapping = {
             'test_connectivity': self._handle_test_connectivity,
-            'get_response': self._handle_get_response,
-            'ask_question': self._handle_ask_question,
             'upload_file': self._handle_upload_file,
-            'send_message': self._handle_send_message
+            'send_message': self._handle_send_message,
+            'list_rooms': self._handle_list_rooms
         }
 
         action = self.get_action_identifier()

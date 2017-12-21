@@ -60,4 +60,4 @@ def display_view(provides, all_app_runs, context):
                 continue
             results.append(ctx_result)
 
-    return "hipchat_display_response.html"
+    return "hipchat_display_rooms.html"
