@@ -59,5 +59,7 @@ def display_view(provides, all_app_runs, context):
             if not ctx_result:
                 continue
             results.append(ctx_result)
+    if provides == "list users":
+        return 'hipchat_display_users.html'
 
     return "hipchat_display_rooms.html"
