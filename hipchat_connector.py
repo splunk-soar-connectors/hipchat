@@ -27,6 +27,7 @@ from hipchat_consts import *
 
 
 class RetVal(tuple):
+
     def __new__(cls, val1, val2):
         return tuple.__new__(RetVal, (val1, val2))
 
@@ -110,7 +111,7 @@ class HipchatConnector(BaseConnector):
     def _process_json_response(self, r, action_result):
         """ This function is used to process json response.
 
-        :param response: response data
+        :param r: response data
         :param action_result: object of Action Result
         :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message)
         """
@@ -139,7 +140,7 @@ class HipchatConnector(BaseConnector):
     def _process_response(self, r, action_result):
         """ This function is used to process html response.
 
-        :param response: response data
+        :param r: response data
         :param action_result: object of Action Result
         :return: status phantom.APP_ERROR/phantom.APP_SUCCESS(along with appropriate message)
         """
@@ -156,7 +157,7 @@ class HipchatConnector(BaseConnector):
         if 'json' in r.headers.get('Content-Type', ''):
             return self._process_json_response(r, action_result)
 
-        # Process an HTML resonse, Do this no matter what the api talks.
+        # Process an HTML resonse, Do this no matter what the API talks.
         # There is a high chance of a PROXY in between phantom and the rest of
         # world, in case of errors, PROXY's return HTML, this function parses
         # the error and adds it to the action_result.
@@ -317,7 +318,7 @@ class HipchatConnector(BaseConnector):
             if phantom.is_fail(status):
                 return action_result.get_status(), None
 
-            # Iterate through each response item and get id if username matches
+            # Iterate through each response item and get ID if username matches
             for item in response['items']:
                 if item['mention_name'] == user_name:
                     user = item['id']
