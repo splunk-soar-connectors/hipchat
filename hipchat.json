@@ -100,6 +100,16 @@
           ]
         },
         {
+          "data_path": "action_result.data.*.links.members",
+          "data_type": "string",
+          "example_values": [
+            "https://hipchat.cds.com/v2/room/1/member"
+          ],
+          "contains": [
+            "url"
+          ]
+        },
+        {
           "data_path": "action_result.data.*.privacy",
           "data_type": "string",
           "example_values": [
@@ -132,20 +142,11 @@
           ]
         },
         {
-          "data_path": "action_result.data.*.links.members",
-          "data_type": "string",
-          "example_values": [
-            "https://hipchat.cds.com/v2/room/104/member"
-          ],
-          "contains": [
-            "url"
-          ]
-        },
-        {
           "data_path": "action_result.status",
           "data_type": "string",
           "example_values": [
-            "success"
+            "success",
+            "failed"
           ]
         },
         {
@@ -182,7 +183,7 @@
     {
       "action": "list users",
       "identifier": "list_users",
-      "description": "List all users",
+      "description": "List all active users",
       "type": "investigate",
       "read_only": true,
       "parameters": {},
@@ -195,7 +196,7 @@
           "data_path": "action_result.data.*.mention_name",
           "data_type": "string",
           "example_values": [
-            "HipChatAdministrator"
+            "Testuser"
           ],
           "contains": [
             "user name"
@@ -239,7 +240,8 @@
           "data_path": "action_result.status",
           "data_type": "string",
           "example_values": [
-            "success"
+            "success",
+            "failed"
           ]
         },
         {
@@ -277,7 +279,7 @@
       "action": "upload file",
       "identifier": "upload_file",
       "description": "Upload file to HipChat",
-      "verbose": "If parameter <b>destination_type</b> is User, parameter <b>destination</b> can be ID of a user, mention name of a user or Email of the user. <br>If parameter <b>destination_type</b> is Room, parameter <b>destination</b> can be ID of room or name of room.",
+      "verbose": "If parameter <b>destination_type</b> is User, parameter <b>destination</b> can be ID/mention name/email of a user. <br>If parameter <b>destination_type</b> is Room, parameter <b>destination</b> can be ID/name of a room.",
       "type": "generic",
       "read_only": true,
       "parameters": {
@@ -298,11 +300,11 @@
           "primary": true,
           "required": true,
           "contains": [
-            "hipchat room id",
-            "hipchat room name",
-            "hipchat user id",
+            "email",
             "user name",
-            "email"
+            "hipchat user id",
+            "hipchat room name",
+            "hipchat room id"
           ],
           "order": 1
         },
@@ -354,7 +356,8 @@
           "data_path": "action_result.parameter.destination_type",
           "data_type": "string",
           "example_values": [
-            "User"
+            "User",
+            "Room"
           ],
           "column_name": "Destination type",
           "column_order": 0
@@ -366,11 +369,11 @@
             "test_email@abc.com"
           ],
           "contains": [
+            "email",
+            "user name",
             "hipchat room id",
             "hipchat room name",
-            "hipchat user id",
-            "user name",
-            "email"
+            "hipchat user id"
           ],
           "column_name": "Destination",
           "column_order": 1
@@ -412,7 +415,7 @@
       "action": "send message",
       "identifier": "send_message",
       "description": "Send message to HipChat user",
-      "verbose": "If parameter <b>destination_type</b> is User, parameter <b>destination</b> can be ID of a user, mention name of a user or Email of the user. <br>If parameter <b>destination_type</b> is Room, parameter <b>destination</b> can be ID of room or name of room.",
+      "verbose": "If parameter <b>destination_type</b> is User, parameter <b>destination</b> can be ID/mention name/email of a user. <br>If parameter <b>destination_type</b> is Room, parameter <b>destination</b> can be ID/name of a room.",
       "type": "generic",
       "read_only": true,
       "parameters": {
@@ -433,11 +436,11 @@
           "primary": true,
           "required": true,
           "contains": [
-            "hipchat room id",
-            "hipchat room name",
-            "hipchat user id",
+            "email",
             "user name",
-            "email"
+            "hipchat room id",
+            "hipchat user id",
+            "hipchat room name"
           ],
           "order": 1
         },
@@ -449,6 +452,20 @@
         }
       },
       "output": [
+        {
+          "data_path": "action_result.data.*.timestamp",
+          "data_type": "string",
+          "example_values": [
+            "2017-12-27T05:31:59Z 887972"
+          ]
+        },
+        {
+          "data_path": "action_result.data.*.id",
+          "data_type": "string",
+          "example_values": [
+            "479c49b6-210c-47ad-b3be-e679c546409d"
+          ]
+        },
         {
           "data_path": "action_result.status",
           "data_type": "string",
@@ -473,11 +490,11 @@
             "test user"
           ],
           "contains": [
-            "user name",
             "email",
+            "user name",
             "hipchat user id",
-            "hipchat room id",
-            "hipchat room name"
+            "hipchat room name",
+            "hipchat room id"
           ],
           "column_name": "Destination",
           "column_order": 1
@@ -486,7 +503,8 @@
           "data_path": "action_result.parameter.destination_type",
           "data_type": "string",
           "example_values": [
-            "User"
+            "User",
+            "Room"
           ],
           "column_name": "Destination type",
           "column_order": 0

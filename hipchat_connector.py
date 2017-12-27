@@ -196,11 +196,11 @@ class HipchatConnector(BaseConnector):
 
         headers['Authorization'] = 'Bearer {token}'.format(token=self._api_token)
 
+        headers['Content-Type'] = 'application/json'
+
         if self.get_action_identifier() == 'upload_file':
             headers['Content-Type'] = 'multipart/related; boundary={boundary}'.format(
                 boundary=HIPCHAT_PAYLOAD_BOUNDARY)
-        else:
-            headers['Content-Type'] = 'application/json'
 
         try:
             request_func = getattr(requests, method)
@@ -267,9 +267,8 @@ class HipchatConnector(BaseConnector):
         with open(vault_file_info[0]['path'], 'rb') as vault_file:
             vault_file_data = vault_file.read()
 
-        payload = HIPCHAT_UPLOAD_FILE_PAYLOAD.format(message=msg, file_data=vault_file_data,
-                                                     boundary=HIPCHAT_PAYLOAD_BOUNDARY,
-                                                     file_name=vault_file_info[0]['name'])
+        payload = HIPCHAT_UPLOAD_FILE_PAYLOAD.format(message=msg, boundary=HIPCHAT_PAYLOAD_BOUNDARY,
+                                                     file_data=vault_file_data, file_name=vault_file_info[0]['name'])
 
         if destination_type == 'Room':
             # make rest call
@@ -280,57 +279,18 @@ class HipchatConnector(BaseConnector):
             ret_val, response = self._make_rest_call(endpoint=HIPCHAT_REST_UPLOAD_FILE.format(user=destination),
                                                      action_result=action_result, data=payload, method='post')
 
+            # If API call fails, it is possible that user has entered the username
             if phantom.is_fail(ret_val):
-
-                # If destination is email
-                if phantom.is_email(urllib.unquote(destination)):
-                    return action_result.get_status()
-                # If input is not an email or an ID get user ID from username
-                ret_value, destination = self._get_user(destination, action_result)
-
-                if not destination:
-                    return action_result.set_status(phantom.APP_ERROR, status_message=HIPCHAT_USER_NOT_AVAILABLE), None
+                # Add @ in encoded form at beginning
+                destination = '%40{destination}'.format(destination=destination)
 
                 ret_val, response = self._make_rest_call(endpoint=HIPCHAT_REST_UPLOAD_FILE.format(user=destination),
                                                          action_result=action_result, method='post', data=payload)
+
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
         return action_result.set_status(phantom.APP_SUCCESS, 'File uploaded successfully')
-
-    def _get_user(self, user_name, action_result):
-        """ This function is used to get the user_id from the username.
-
-        :param user_name: Username
-        :param action_result: Object of class ActionResult
-        :return: status, user_id
-        """
-
-        start_index = 0
-        param = {}
-        user = None
-
-        # List User API returns paginated response
-        while True:
-            param[HIPCHAT_START_INDEX] = start_index
-            status, response = self._make_rest_call(HIPCHAT_REST_TEST_CONNECTIVITY, action_result, params=param)
-
-            if phantom.is_fail(status):
-                return action_result.get_status(), None
-
-            # Iterate through each response item and get ID if username matches
-            for item in response['items']:
-                if item['mention_name'] == user_name:
-                    user = item['id']
-                    break
-
-            # If response is empty or user is already found
-            if not response['items'] or user:
-                break
-
-            start_index += 100
-
-        return action_result.set_status(phantom.APP_SUCCESS), user
 
     def _handle_send_message(self, param):
         """ This function is used to send the message to specific user.
@@ -357,21 +317,17 @@ class HipchatConnector(BaseConnector):
 
             # If it fails, it is possible that user has entered the username
             if phantom.is_fail(ret_val):
-                # If user has entered the email
-                if phantom.is_email(urllib.unquote(destination)):
-                    return action_result.get_status()
-                # If input is not an email or an user ID, get user ID from username
-                ret_value, destination = self._get_user(destination, action_result)
 
-                if not destination:
-                    return action_result.set_status(phantom.APP_ERROR, status_message=HIPCHAT_USER_NOT_AVAILABLE), None
-
+                # Add @ in encoded form at the beginning
+                destination = '%40{destination}'.format(destination=destination)
                 ret_val, response = self._make_rest_call(endpoint=HIPCHAT_REST_SEND_MESSAGE.format(user=destination),
                                                          action_result=action_result, method='post',
                                                          data=json.dumps(data))
 
         if phantom.is_fail(ret_val):
             return action_result.get_status()
+
+        action_result.add_data(response)
 
         return action_result.set_status(phantom.APP_SUCCESS, status_message='Message sent')
 
@@ -435,8 +391,8 @@ class HipchatConnector(BaseConnector):
             if not response['items']:
                 break
 
-            for room in response['items']:
-                action_result.add_data(room)
+            for user in response['items']:
+                action_result.add_data(user)
 
             start_index += 100
 
