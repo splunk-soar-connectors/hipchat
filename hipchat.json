@@ -14,7 +14,7 @@
     "utctime_updated": "2018-02-15T21:18:57.000000Z",
     "package_name": "phantom_hipchat",
     "main_module": "hipchat_connector.pyc",
-    "min_phantom_version": "3.0.251",
+    "min_phantom_version": "3.0.284",
     "app_wizard_version": "1.0.0",
     "configuration": {
         "server_url": {
