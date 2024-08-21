@@ -2,15 +2,15 @@
 # HipChat
 
 Publisher: Phantom  
-Connector Version: 1\.0\.5  
+Connector Version: 1.0.7  
 Product Vendor: Atlassian  
 Product Name: HipChat  
-Product Version Supported (regex): "\.\*"  
-Minimum Product Version: 4\.0\.1068  
+Product Version Supported (regex): ".\*"  
+Minimum Product Version: 4.0.1068  
 
 This app integrates with HipChat to support different generic and investigative actions
 
-[comment]: # "File: readme.md"
+[comment]: # "File: README.md"
 [comment]: # "Copyright (c) 2018-2019 Splunk Inc."
 [comment]: # ""
 [comment]: # "Licensed under the Apache License, Version 2.0 (the 'License');"
@@ -33,13 +33,13 @@ The below configuration variables are required for this Connector to operate.  T
 
 VARIABLE | REQUIRED | TYPE | DESCRIPTION
 -------- | -------- | ---- | -----------
-**server\_url** |  required  | string | Server URL \(e\.g\. https\://10\.10\.10\.10\)
-**verify\_server\_cert** |  optional  | boolean | Verify Server Certificate
-**api\_token** |  required  | password | API token
+**server_url** |  required  | string | Server URL (e.g. https://10.10.10.10)
+**verify_server_cert** |  optional  | boolean | Verify Server Certificate
+**api_token** |  required  | password | API token
 
 ### Supported Actions  
 [test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity using supplied configuration  
-[list rooms](#action-list-rooms) - List non\-archived rooms  
+[list rooms](#action-list-rooms) - List non-archived rooms  
 [list users](#action-list-users) - List all active users  
 [upload file](#action-upload-file) - Upload file to HipChat  
 [send message](#action-send-message) - Send message to HipChat user  
@@ -57,7 +57,7 @@ No parameters are required for this action
 No Output  
 
 ## action: 'list rooms'
-List non\-archived rooms
+List non-archived rooms
 
 Type: **investigate**  
 Read only: **True**
@@ -66,22 +66,22 @@ Read only: **True**
 No parameters are required for this action
 
 #### Action Output
-DATA PATH | TYPE | CONTAINS
---------- | ---- | --------
-action\_result\.status | string | 
-action\_result\.data\.\*\.id | numeric |  `hipchat room id` 
-action\_result\.data\.\*\.is\_archived | boolean | 
-action\_result\.data\.\*\.links\.members | string |  `url` 
-action\_result\.data\.\*\.links\.participants | string |  `url` 
-action\_result\.data\.\*\.links\.self | string |  `url` 
-action\_result\.data\.\*\.links\.webhooks | string |  `url` 
-action\_result\.data\.\*\.name | string |  `hipchat room name` 
-action\_result\.data\.\*\.privacy | string | 
-action\_result\.data\.\*\.version | string | 
-action\_result\.summary\.total\_rooms | numeric | 
-action\_result\.message | string | 
-summary\.total\_objects | numeric | 
-summary\.total\_objects\_successful | numeric |   
+DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
+--------- | ---- | -------- | --------------
+action_result.status | string |  |   success  failed 
+action_result.data.\*.id | numeric |  `hipchat room id`  |   1 
+action_result.data.\*.is_archived | boolean |  |   True  False 
+action_result.data.\*.links.members | string |  `url`  |   https://hipchat.cds.com/v2/room/1/member 
+action_result.data.\*.links.participants | string |  `url`  |   https://hipchat.cds.com/v2/room/1/participant 
+action_result.data.\*.links.self | string |  `url`  |   https://hipchat.cds.com/v2/room/1 
+action_result.data.\*.links.webhooks | string |  `url`  |   https://hipchat.cds.com/v2/room/1/webhook 
+action_result.data.\*.name | string |  `hipchat room name`  |   Default 
+action_result.data.\*.privacy | string |  |   public 
+action_result.data.\*.version | string |  |   C1MNIO9A 
+action_result.summary.total_rooms | numeric |  |   104 
+action_result.message | string |  |   Total rooms: 104 
+summary.total_objects | numeric |  |   1 
+summary.total_objects_successful | numeric |  |   1   
 
 ## action: 'list users'
 List all active users
@@ -93,18 +93,18 @@ Read only: **True**
 No parameters are required for this action
 
 #### Action Output
-DATA PATH | TYPE | CONTAINS
---------- | ---- | --------
-action\_result\.status | string | 
-action\_result\.data\.\*\.id | numeric |  `hipchat user id` 
-action\_result\.data\.\*\.links\.self | string |  `url` 
-action\_result\.data\.\*\.mention\_name | string |  `user name` 
-action\_result\.data\.\*\.name | string | 
-action\_result\.data\.\*\.version | string | 
-action\_result\.summary\.total\_users | numeric | 
-action\_result\.message | string | 
-summary\.total\_objects | numeric | 
-summary\.total\_objects\_successful | numeric |   
+DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
+--------- | ---- | -------- | --------------
+action_result.status | string |  |   success  failed 
+action_result.data.\*.id | numeric |  `hipchat user id`  |   1 
+action_result.data.\*.links.self | string |  `url`  |   https://hipchat.cds.com/v2/user/1 
+action_result.data.\*.mention_name | string |  `user name`  |   Testuser 
+action_result.data.\*.name | string |  |   Test user 
+action_result.data.\*.version | string |  |   A18E977A 
+action_result.summary.total_users | numeric |  |   6 
+action_result.message | string |  |   Total users: 6 
+summary.total_objects | numeric |  |   1 
+summary.total_objects_successful | numeric |  |   1   
 
 ## action: 'upload file'
 Upload file to HipChat
@@ -112,27 +112,27 @@ Upload file to HipChat
 Type: **generic**  
 Read only: **True**
 
-If parameter <b>destination\_type</b> is User, parameter <b>destination</b> can be ID/mention name/email of a user\. <br>If parameter <b>destination\_type</b> is Room, parameter <b>destination</b> can be ID/name of a room\.
+If parameter <b>destination_type</b> is User, parameter <b>destination</b> can be ID/mention name/email of a user. <br>If parameter <b>destination_type</b> is Room, parameter <b>destination</b> can be ID/name of a room.
 
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
-**destination\_type** |  required  | Type of destination | string | 
+**destination_type** |  required  | Type of destination | string | 
 **destination** |  required  | Room or User to upload to | string |  `email`  `user name`  `hipchat user id`  `hipchat room name`  `hipchat room id` 
-**vault\_id** |  required  | Vault ID of file to send | string |  `vault id`  `sha1` 
+**vault_id** |  required  | Vault ID of file to send | string |  `vault id`  `sha1` 
 **message** |  optional  | Message to send with file | string | 
 
 #### Action Output
-DATA PATH | TYPE | CONTAINS
---------- | ---- | --------
-action\_result\.status | string | 
-action\_result\.parameter\.destination | string |  `email`  `user name`  `hipchat room id`  `hipchat room name`  `hipchat user id` 
-action\_result\.parameter\.destination\_type | string | 
-action\_result\.parameter\.message | string | 
-action\_result\.parameter\.vault\_id | string |  `sha1`  `vault id` 
-action\_result\.message | string | 
-summary\.total\_objects | numeric | 
-summary\.total\_objects\_successful | numeric |   
+DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
+--------- | ---- | -------- | --------------
+action_result.status | string |  |   success  failed 
+action_result.parameter.destination | string |  `email`  `user name`  `hipchat room id`  `hipchat room name`  `hipchat user id`  |   test_email@abc.com 
+action_result.parameter.destination_type | string |  |   User  Room 
+action_result.parameter.message | string |  |   test message 
+action_result.parameter.vault_id | string |  `sha1`  `vault id`  |   343c4d96e55471f29a5f5717ad2157513d45bbf4 
+action_result.message | string |  |   File uploaded successfully 
+summary.total_objects | numeric |  |   1 
+summary.total_objects_successful | numeric |  |   1   
 
 ## action: 'send message'
 Send message to HipChat user
@@ -140,24 +140,24 @@ Send message to HipChat user
 Type: **generic**  
 Read only: **True**
 
-If parameter <b>destination\_type</b> is User, parameter <b>destination</b> can be ID/mention name/email of a user\. <br>If parameter <b>destination\_type</b> is Room, parameter <b>destination</b> can be ID/name of a room\.
+If parameter <b>destination_type</b> is User, parameter <b>destination</b> can be ID/mention name/email of a user. <br>If parameter <b>destination_type</b> is Room, parameter <b>destination</b> can be ID/name of a room.
 
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
-**destination\_type** |  required  | Type of destination | string | 
+**destination_type** |  required  | Type of destination | string | 
 **destination** |  required  | Room or User to send message to | string |  `email`  `user name`  `hipchat room id`  `hipchat user id`  `hipchat room name` 
 **message** |  required  | Message to send | string | 
 
 #### Action Output
-DATA PATH | TYPE | CONTAINS
---------- | ---- | --------
-action\_result\.status | string | 
-action\_result\.parameter\.destination | string |  `email`  `user name`  `hipchat user id`  `hipchat room name`  `hipchat room id` 
-action\_result\.parameter\.destination\_type | string | 
-action\_result\.parameter\.message | string | 
-action\_result\.data\.\*\.id | string | 
-action\_result\.data\.\*\.timestamp | string | 
-action\_result\.message | string | 
-summary\.total\_objects | numeric | 
-summary\.total\_objects\_successful | numeric | 
+DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
+--------- | ---- | -------- | --------------
+action_result.status | string |  |   success  failed 
+action_result.parameter.destination | string |  `email`  `user name`  `hipchat user id`  `hipchat room name`  `hipchat room id`  |   test user 
+action_result.parameter.destination_type | string |  |   User  Room 
+action_result.parameter.message | string |  |   Test message 
+action_result.data.\*.id | string |  |   479c49b6-210c-47ad-b3be-e679c546409d 
+action_result.data.\*.timestamp | string |  |   2017-12-27T05:31:59Z 887972 
+action_result.message | string |  |   Message sent 
+summary.total_objects | numeric |  |   1 
+summary.total_objects_successful | numeric |  |   1 
